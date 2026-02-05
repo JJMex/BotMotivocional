@@ -3,25 +3,16 @@ import requests
 import textwrap
 import random
 import time
-import tweepy
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from io import BytesIO
 from deep_translator import GoogleTranslator
 
-# --- CONFIGURACIÓN DE LLAVES ---
-# Telegram
+# --- CONFIGURACIÓN ---
+# Solo necesitamos Telegram y Pexels
 TG_TOKEN = os.environ.get('TELEGRAM_TOKEN')
 TG_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
-
-# Pexels & Estética
 PEXELS_KEY = os.environ.get('PEXELS_API_KEY')
 NOMBRE_LOGO = "logo_jjmex.png"
-
-# Twitter (X)
-TW_API_KEY = os.environ.get('TWITTER_API_KEY')
-TW_API_SECRET = os.environ.get('TWITTER_API_SECRET')
-TW_ACCESS_TOKEN = os.environ.get('TWITTER_ACCESS_TOKEN')
-TW_ACCESS_SECRET = os.environ.get('TWITTER_ACCESS_SECRET')
 
 # APIs URLs
 URL_API_FRASE = "https://zenquotes.io/api/random"
@@ -38,7 +29,7 @@ TEMAS = {
     "default": ["stormy ocean", "mountain peak", "dark city night", "galaxy stars"]
 }
 
-# --- ARSENAL DE FRASES ---
+# --- ARSENAL DE FRASES (RIQUEZA, PODER, GYM) ---
 FRASES_MANUALES = [
     "El dinero no duerme, y tú tampoco deberías.",
     "Tu cuenta bancaria es el reflejo de tus hábitos.",
@@ -140,8 +131,6 @@ FRASES_MANUALES = [
     "El fracaso es solo la oportunidad de comenzar de nuevo con más inteligencia."
 ]
 
-# --- FUNCIONES DE ENVÍO ---
-
 def enviar_telegram(image_bytes, caption):
     if not TG_TOKEN or not TG_CHAT_ID: 
         print("⚠️ No hay llaves de Telegram.")
@@ -154,42 +143,6 @@ def enviar_telegram(image_bytes, caption):
         return True
     except Exception as e: 
         print(f"Error Telegram: {e}")
-        return False
-
-def enviar_twitter(image_bytes, texto_limpio):
-    if not TW_API_KEY: 
-        print("⚠️ No hay llaves de Twitter.")
-        return False
-    try:
-        # 1. Autenticación v1.1 (Para subir imágenes)
-        auth = tweepy.OAuthHandler(TW_API_KEY, TW_API_SECRET)
-        auth.set_access_token(TW_ACCESS_TOKEN, TW_ACCESS_SECRET)
-        api = tweepy.API(auth)
-
-        # 2. Autenticación v2 (Para publicar el tweet)
-        client = tweepy.Client(
-            consumer_key=TW_API_KEY, consumer_secret=TW_API_SECRET,
-            access_token=TW_ACCESS_TOKEN, access_token_secret=TW_ACCESS_SECRET
-        )
-
-        # 3. Subir la imagen (Necesita un archivo físico temporal)
-        nombre_temp = "temp_twitter.jpg"
-        with open(nombre_temp, 'wb') as f:
-            f.write(image_bytes.getbuffer())
-        
-        print("📤 Subiendo media a Twitter...")
-        media = api.media_upload(filename=nombre_temp)
-        
-        # 4. Publicar Tweet
-        print("🐦 Publicando Tweet...")
-        client.create_tweet(text=texto_limpio, media_ids=[media.media_id])
-        
-        # Limpiar
-        os.remove(nombre_temp)
-        return True
-
-    except Exception as e:
-        print(f"❌ Error Twitter: {e}")
         return False
 
 # --- MOTORES DE GENERACIÓN ---
@@ -234,6 +187,7 @@ def obtener_imagen_fitness_lujo(frase):
         return Image.open(BytesIO(requests.get(URL_BACKUP).content))
 
 def obtener_frase():
+    # 60% Frases manuales / 40% API
     if random.random() < 0.6:
         print("⚡ Frase MANUAL")
         return random.choice(FRASES_MANUALES), "JJMex"
@@ -246,18 +200,18 @@ def obtener_frase():
         return random.choice(FRASES_MANUALES), "JJMex"
 
 def crear_poster():
-    # 1. GENERAR CONTENIDO
+    # 1. Generar Contenido
     frase_es, autor = obtener_frase()
     img = obtener_imagen_fitness_lujo(frase_es)
     img = img.resize((1080, 1920)) 
     
-    # Capa oscura
+    # 2. Estilo Dark Mode (Overlay negro al 60%)
     overlay = Image.new('RGBA', img.size, (0, 0, 0, 60))
     img = img.convert('RGBA')
     img = Image.alpha_composite(img, overlay)
     img = img.convert('RGB')
     
-    # Dibujar
+    # 3. Dibujar Texto
     W, H = img.size
     draw = ImageDraw.Draw(img)
     try:
@@ -274,6 +228,8 @@ def crear_poster():
     for linea in lineas:
         bbox = draw.textbbox((0, 0), linea, font=font)
         x = (W - (bbox[2] - bbox[0])) / 2
+        
+        # Sombra negra para legibilidad
         draw.text((x+4, y_text+4), linea, font=font, fill="black")
         draw.text((x, y_text), linea, font=font, fill="white")
         y_text += (bbox[3] - bbox[1]) + 20
@@ -283,7 +239,7 @@ def crear_poster():
     x_a = (W - (bbox_a[2] - bbox_a[0])) / 2
     draw.text((x_a, y_text), f"- {autor}", font=font_autor, fill="#cccccc")
 
-    # Logo
+    # 4. Pegar Logo
     try:
         logo = Image.open(NOMBRE_LOGO).convert("RGBA")
         ancho_logo = int(W * 0.18)
@@ -292,23 +248,21 @@ def crear_poster():
         img.paste(logo, (W - ancho_logo - 60, H - alto_logo - 60), logo)
     except: pass
 
-    # Guardar en memoria
+    # 5. Enviar a Telegram
     bio = BytesIO()
     img.save(bio, 'JPEG', quality=95)
     bio.seek(0)
     
-    # --- 2. ENVIAR A TELEGRAM ---
     caption_tg = f"🐺 <b>{frase_es}</b>\n\n#Riqueza #Poder #JJMex #{tema_actual}"
     print("🚀 Enviando a Telegram...")
-    enviar_telegram(bio, caption_tg)
     
-    # --- 3. ENVIAR A TWITTER ---
-    # Rebobinamos la imagen para leerla de nuevo
-    bio.seek(0)
-    # Quitamos negritas HTML para Twitter
-    caption_tw = f"🐺 {frase_es}\n\n#Riqueza #Poder #JJMex #{tema_actual}"
-    print("🚀 Enviando a Twitter...")
-    enviar_twitter(bio, caption_tw)
+    # Reintentos por si falla la red
+    for i in range(3):
+        if enviar_telegram(bio, caption_tg):
+            print("✅ Enviado con éxito.")
+            break
+        time.sleep(10)
+        bio.seek(0)
 
 if __name__ == "__main__":
     crear_poster()
