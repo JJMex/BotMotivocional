@@ -18,41 +18,121 @@ URL_API_FRASE = "https://zenquotes.io/api/random"
 URL_PEXELS = "https://api.pexels.com/v1/search"
 URL_BACKUP = "https://picsum.photos/1080/1920"
 
-# --- DICCIONARIO DE PODER (SOLO TEMAS FUERTES) ---
+# --- DICCIONARIO DE PODER ---
 TEMAS = {
-    "riqueza": ["luxury lifestyle", "stacks of money", "gold bars", "expensive watch", "private jet", "lamborghini", "ferrari"],
-    "negocios": ["business man suit", "stock market wall street", "skyscraper view", "luxury office", "signing contract"],
-    "poder": ["lion face dark", "chess king", "wolf dark", "throne", "military discipline"],
-    "gym": ["bodybuilder", "heavy weights", "boxing training", "sprinter running", "crossfit", "sweat gym"],
-    "disciplina": ["alarm clock 5am", "working late night office", "samurai", "spartan warrior"],
-    
-    # El default también debe ser poderoso, nada de flores
-    "default": ["stormy ocean", "mountain peak", "eagle flying", "dark city night"]
+    "riqueza": ["luxury lifestyle", "stacks of money", "gold bars", "expensive watch", "private jet", "lamborghini", "ferrari", "yacht"],
+    "negocios": ["business man suit", "stock market wall street", "skyscraper view", "luxury office", "signing contract", "entrepreneur"],
+    "poder": ["lion face dark", "chess king", "wolf dark", "throne", "military discipline", "eagle flying"],
+    "gym": ["bodybuilder", "heavy weights", "boxing training", "sprinter running", "crossfit", "sweat gym", "fitness model"],
+    "disciplina": ["alarm clock 5am", "working late night office", "samurai", "spartan warrior", "running rain"],
+    "default": ["stormy ocean", "mountain peak", "dark city night", "galaxy stars"]
 }
 
-# --- LISTA DE FRASES BLINDADA (ESTILO LOBO DE WALL STREET/GYM) ---
-# Estas frases garantizan el tono que buscas.
+# --- ARSENAL DE 100 FRASES (RIQUEZA, PODER, GYM) ---
 FRASES_MANUALES = [
-    "No te detengas cuando estés cansado, detente cuando hayas terminado.",
+    # --- RIQUEZA Y NEGOCIOS ---
     "El dinero no duerme, y tú tampoco deberías.",
     "Tu cuenta bancaria es el reflejo de tus hábitos.",
     "Mientras ellos duermen, tú construyes tu imperio.",
-    "El dolor es temporal, la gloria es eterna.",
-    "No busques culpables, busca soluciones.",
     "La pobreza es una enfermedad mental. Cúrate.",
     "Sé un monstruo en los negocios y un caballero en la vida.",
     "Si no trabajas por tus sueños, alguien te contratará para que trabajes por los suyos.",
-    "La disciplina es hacer lo que odias como si lo amaras.",
-    "Tu única competencia es quien eras ayer.",
+    "Gana dinero mientras duermes o trabajarás hasta que mueras.",
+    "No persigas el dinero, persigue la visión y el dinero te seguirá.",
     "El éxito ama la preparación y odia la excusa.",
     "Naciste para liderar, no para seguir.",
     "Hazlo en silencio y deja que tu éxito haga el ruido.",
+    "Obsesión es la palabra que los vagos usan para describir la dedicación.",
+    "Prefiero llorar en un Ferrari que en un autobús.",
+    "El salario es la droga que te dan para olvidar tus sueños.",
+    "Invierte en ti, es la única inversión que no quiebra.",
+    "Los perdedores miran la pared, los ganadores la escalan.",
+    "No te pagan por la hora, te pagan por el valor que aportas a la hora.",
+    "El riesgo es el precio que pagas por la oportunidad.",
+    "Deja de comprar cosas que no necesitas para impresionar a gente que no te importa.",
+    "El dinero es libertad amplificada.",
+    "Si te juntas con 5 millonarios, tú serás el sexto.",
+    "Las excusas no pagan facturas.",
+    "Trabaja hasta que tus ídolos se conviertan en tus rivales.",
+    "El lunes es el día favorito de los que aman lo que construyen.",
+    "No busques comodidad, busca apalancamiento.",
+    "La riqueza se oculta a los que no tienen disciplina.",
+    "Vende el problema que resuelves, no el producto.",
+    "Sé tan bueno que no puedan ignorarte.",
+    "El mercado no tiene sentimientos, tiene tendencias.",
+    "Ahorrar es de pobres, invertir es de ricos.",
+    "Tu red de contactos es tu patrimonio neto.",
+    "No hables de planes, muestra resultados.",
+    "La suerte es lo que sucede cuando la preparación se encuentra con la oportunidad.",
+
+    # --- GYM, DOLOR Y DISCIPLINA ---
+    "El dolor es temporal, la gloria es eterna.",
+    "No te detengas cuando estés cansado, detente cuando hayas terminado.",
+    "El cuerpo logra lo que la mente cree.",
+    "La disciplina es hacer lo que odias como si lo amaras.",
+    "Tu única competencia es quien eras ayer.",
     "Si fuera fácil, todo el mundo lo haría.",
     "No bajes la meta, aumenta el esfuerzo.",
-    "El precio de la grandeza es la responsabilidad.",
+    "Suda en el entrenamiento para no sangrar en la batalla.",
+    "El gimnasio es mi terapia, el hierro mi psicólogo.",
+    "Construye un cuerpo que no necesite presentación.",
+    "La motivación te inicia, el hábito te mantiene.",
+    "Un día o día uno. Tú decides.",
+    "El dolor de hoy es la fuerza de mañana.",
+    "Cómete el mundo o el mundo te comerá a ti.",
+    "Entrena como una bestia para lucir como un rey.",
+    "Las sentadillas no mienten.",
+    "El sudor es la grasa llorando.",
+    "No hay atajos para lugares que valgan la pena.",
+    "El descanso es parte del entreno, la pereza no.",
+    "Domina tu mente y dominarás tu cuerpo.",
+    "La fuerza no viene de ganar, viene de no rendirse.",
+    "Si no te desafía, no te cambia.",
+    "Menos charla, más peso.",
+    "Tu cuerpo es el único lugar que tienes para vivir.",
+    "La debilidad es una elección.",
+    "No cuentes las repeticiones, haz que las repeticiones cuenten.",
+    "Levántate. Entrena. Repite.",
+    "El sacrificio de hoy es el cuerpo del verano.",
+    "Entrena hasta que tus ídolos te pidan consejos.",
+    "Soy el arquitecto de mi propio físico.",
+    
+    # --- PODER, MENTALIDAD Y ESTOICISMO ---
     "Un león no se preocupa por la opinión de las ovejas.",
-    "Obsesión es la palabra que los vagos usan para describir la dedicación.",
-    "Gana dinero mientras duermes o trabajarás hasta que mueras."
+    "El precio de la grandeza es la responsabilidad.",
+    "No busques culpables, busca soluciones.",
+    "Lo que no te mata, te hace más fuerte.",
+    "Sé el dueño de tu destino, el capitán de tu alma.",
+    "La calma es la cuna del poder.",
+    "Nunca digas todo lo que sabes.",
+    "El poder real no se grita, se siente.",
+    "Mantén la cabeza fría y el corazón ardiente.",
+    "La lealtad es un regalo caro, no lo esperes de gente barata.",
+    "Un rey no necesita gritar para ser escuchado.",
+    "La venganza es perder el tiempo, el éxito es la mejor revancha.",
+    "No temas a la soledad, los leones caminan solos.",
+    "El respeto se gana, no se pide.",
+    "Controla tus emociones o ellas te controlarán a ti.",
+    "El silencio es la mejor respuesta para un necio.",
+    "Sé peligroso pero mantente controlado.",
+    "La confianza en sí mismo es el primer secreto del éxito.",
+    "Mira a los ojos cuando hables.",
+    "Cumple tu palabra o no la des.",
+    "Sé implacable con tus objetivos y flexible con tus métodos.",
+    "La historia la escriben los vencedores.",
+    "Si quieres paz, prepárate para la guerra.",
+    "El carácter es lo que haces cuando nadie te mira.",
+    "No expliques tu filosofía, encárnala.",
+    "Vive como si fueras a morir mañana, aprende como si fueras a vivir siempre.",
+    "La paciencia es amarga, pero su fruto es dulce.",
+    "No eres lo que logras, eres lo que superas.",
+    "El miedo es una reacción, el coraje es una decisión.",
+    "Sé el cambio que quieres ver en el mundo, pero empieza por tu cuenta bancaria.",
+    "La mediocridad es el peor enemigo.",
+    "Nunca te rindas, los milagros ocurren todos los días.",
+    "Tu tiempo es limitado, no lo desperdicies viviendo la vida de otro.",
+    "Atrévete a ser diferente.",
+    "El fracaso es solo la oportunidad de comenzar de nuevo con más inteligencia."
 ]
 
 def enviar_foto(image_bytes, caption):
@@ -61,26 +141,26 @@ def enviar_foto(image_bytes, caption):
         url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
         files = {'photo': ('motivacion.jpg', image_bytes)}
         data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
-        requests.post(url, files=files, data=data, timeout=20)
+        requests.post(url, files=files, data=data, timeout=30)
         return True
     except Exception as e: 
         print(f"Error TG: {e}")
         return False
 
-# Variable para guardar qué tema se usó
+# Variable global para guardar qué tema se usó
 tema_actual = "Éxito"
 
 def obtener_imagen_fitness_lujo(frase):
     global tema_actual
     frase_low = frase.lower()
     
-    # 1. Detectar palabras clave en la frase
+    # Detector de palabras clave mejorado
     palabras_clave = {
-        "dinero": "riqueza", "banco": "riqueza", "millonario": "riqueza", "pobreza": "riqueza",
-        "negocio": "negocios", "trabajo": "negocios", "imperio": "negocios",
-        "gym": "gym", "fuerza": "gym", "dolor": "gym", "cuerpo": "gym", "entrenar": "gym",
-        "lider": "poder", "león": "poder", "lobo": "poder", "rey": "poder",
-        "tiempo": "disciplina", "disciplina": "disciplina", "noche": "disciplina"
+        "dinero": "riqueza", "banco": "riqueza", "millonario": "riqueza", "pobreza": "riqueza", "lujo": "riqueza", "ferrari": "riqueza", "invertir": "riqueza", "facturas": "riqueza",
+        "negocio": "negocios", "trabajo": "negocios", "imperio": "negocios", "éxito": "negocios", "mercado": "negocios", "vender": "negocios",
+        "gym": "gym", "fuerza": "gym", "dolor": "gym", "cuerpo": "gym", "entrenar": "gym", "suda": "gym", "pesas": "gym", "físico": "gym",
+        "lider": "poder", "león": "poder", "lobo": "poder", "rey": "poder", "guerra": "poder", "venganza": "poder", "carácter": "poder",
+        "tiempo": "disciplina", "disciplina": "disciplina", "noche": "disciplina", "hábito": "disciplina", "reloj": "disciplina"
     }
 
     tema_encontrado = "default"
@@ -89,7 +169,6 @@ def obtener_imagen_fitness_lujo(frase):
             tema_encontrado = categoria
             break
     
-    # Si no encuentra palabra clave, elegimos uno AL AZAR de los temas fuertes (no default aburrido)
     if tema_encontrado == "default":
         tema_encontrado = random.choice(list(TEMAS.keys()))
 
@@ -99,45 +178,48 @@ def obtener_imagen_fitness_lujo(frase):
 
     try:
         headers = {'Authorization': PEXELS_KEY}
+        # Pedimos más resultados (8) para tener variedad
         params = {'query': busqueda, 'orientation': 'portrait', 'per_page': 8} 
-        response = requests.get(URL_PEXELS, headers=headers, params=params, timeout=15)
+        response = requests.get(URL_PEXELS, headers=headers, params=params, timeout=20)
         data = response.json()
         if 'photos' in data and len(data['photos']) > 0:
             foto = random.choice(data['photos'])
-            return Image.open(BytesIO(requests.get(foto['src']['large2x'], timeout=15).content))
+            return Image.open(BytesIO(requests.get(foto['src']['large2x'], timeout=20).content))
         else:
-            raise Exception("Sin resultados")
+            raise Exception("Sin resultados Pexels")
     except:
         return Image.open(BytesIO(requests.get(URL_BACKUP).content))
 
 def obtener_frase():
-    # 70% de probabilidad de usar nuestras frases MANUALES (Garantía de calidad)
-    # 30% de probabilidad de usar API (Variedad)
-    if random.random() < 0.7:
-        print("Usando frase manual de PODER")
-        return random.choice(FRASES_MANUALES), "Mente & Éxito"
+    # --- LÓGICA 60/40 ---
+    # Si el número aleatorio (0.0 a 1.0) es menor a 0.6, usamos la lista manual (60%)
+    if random.random() < 0.6:
+        print("⚡ Usando frase MANUAL de Poder")
+        # --- AQUÍ ESTÁ EL CAMBIO SOLICITADO ---
+        return random.choice(FRASES_MANUALES), "JJMex"
     
+    # El otro 40% usamos la API externa
     try:
-        print("Buscando frase en API...")
-        data = requests.get(URL_API_FRASE, timeout=5).json()[0]
+        print("🌐 Buscando frase en API...")
+        data = requests.get(URL_API_FRASE, timeout=10).json()[0]
         frase_en = data['q']
         autor = data['a']
-        # Traducir
         frase_es = GoogleTranslator(source='auto', target='es').translate(frase_en)
         return frase_es, autor
     except:
+        # Si falla la API, volvemos a la lista manual como respaldo
         return random.choice(FRASES_MANUALES), "JJMex"
 
 def crear_poster():
     # 1. Obtener contenido
     frase_es, autor = obtener_frase()
 
-    # 2. Obtener Imagen (Lujo/Gym)
+    # 2. Obtener Imagen
     img = obtener_imagen_fitness_lujo(frase_es)
     img = img.resize((1080, 1920)) 
-    # Oscurecer imagen un poco para que el texto blanco resalte más (Toque Dark Mode)
-    # Creamos una capa negra semitransparente
-    overlay = Image.new('RGBA', img.size, (0, 0, 0, 60)) # 60 es la opacidad
+    
+    # 3. Efecto Dark Mode (Capa negra al 60% de opacidad)
+    overlay = Image.new('RGBA', img.size, (0, 0, 0, 60))
     img = img.convert('RGBA')
     img = Image.alpha_composite(img, overlay)
     img = img.convert('RGB')
@@ -145,7 +227,6 @@ def crear_poster():
     W, H = img.size
     draw = ImageDraw.Draw(img)
     
-    # Fuentes
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 80)
         font_autor = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 45)
@@ -153,7 +234,6 @@ def crear_poster():
         font = ImageFont.load_default()
         font_autor = ImageFont.load_default()
 
-    # Formato de texto
     lineas = textwrap.wrap(frase_es, width=18)
     altura_bloque = sum([draw.textbbox((0, 0), l, font=font)[3] - draw.textbbox((0, 0), l, font=font)[1] + 20 for l in lineas])
     y_text = (H - altura_bloque) / 2
@@ -164,36 +244,39 @@ def crear_poster():
         h_line = bbox[3] - bbox[1]
         x = (W - w_line) / 2
         
-        # Sombra sólida para agresividad
+        # Sombra negra fuerte para máxima legibilidad
         draw.text((x+4, y_text+4), linea, font=font, fill="black")
         draw.text((x, y_text), linea, font=font, fill="white")
         y_text += h_line + 20
 
-    # Autor
     y_text += 40
     bbox_a = draw.textbbox((0, 0), f"- {autor}", font=font_autor)
     x_a = (W - (bbox_a[2] - bbox_a[0])) / 2
     draw.text((x_a, y_text), f"- {autor}", font=font_autor, fill="#cccccc")
 
-    # Pegar Logo
+    # 4. Pegar Logo (si existe)
     try:
         logo = Image.open(NOMBRE_LOGO).convert("RGBA")
-        ancho_logo = int(W * 0.18) # Un poco más grande para imponer marca
+        ancho_logo = int(W * 0.18)
         alto_logo = int((ancho_logo / logo.width) * logo.height)
         logo = logo.resize((ancho_logo, alto_logo), Image.LANCZOS)
         img.paste(logo, (W - ancho_logo - 60, H - alto_logo - 60), logo)
     except:
         pass
 
-    # Enviar con Reintentos
+    # 5. Enviar (Con 3 Reintentos)
     bio = BytesIO()
     img.save(bio, 'JPEG', quality=95)
     bio.seek(0)
     
-    caption = f"🐺 <b>{frase_es}</b>\n\n#Riqueza #Poder #JJMex"
+    # Hashtags dinámicos
+    caption = f"🐺 <b>{frase_es}</b>\n\n#Riqueza #Poder #JJMex #{tema_actual}"
     
     for i in range(3):
-        if enviar_foto(bio, caption): break
+        print(f"Intento {i+1}...")
+        if enviar_foto(bio, caption): 
+            print("✅ Enviado.")
+            break
         time.sleep(10)
         bio.seek(0)
 
