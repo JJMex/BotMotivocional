@@ -10,6 +10,7 @@ from deep_translator import GoogleTranslator
 TOKEN = os.environ.get('TELEGRAM_TOKEN')
 CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 PEXELS_KEY = os.environ.get('PEXELS_API_KEY')
+NOMBRE_LOGO = "logo_jjmex.png" # El archivo que subiste
 
 # APIs
 URL_FRASE = "https://zenquotes.io/api/random"
@@ -40,12 +41,10 @@ def enviar_foto(image_bytes, caption):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
         files = {'photo': ('motivacion.jpg', image_bytes)}
-        # AQUÍ ESTABA EL ERROR: Faltaba avisar que usamos HTML
         data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
         requests.post(url, files=files, data=data)
     except Exception as e: print(f"Error TG: {e}")
 
-# Variable global para guardar el tema detectado
 tema_actual = "Inspiración"
 
 def obtener_imagen_inteligente(frase_es):
@@ -53,9 +52,8 @@ def obtener_imagen_inteligente(frase_es):
     print(f"Analizando frase: '{frase_es}'")
     frase_low = frase_es.lower()
     
-    # Lógica de selección de tema
     busqueda = random.choice(TEMAS["default"])
-    tema_actual = "Motivación" # Default
+    tema_actual = "Motivación"
     
     for palabra_clave, busquedas_posibles in TEMAS.items():
         if palabra_clave in frase_low and palabra_clave != "default":
@@ -92,15 +90,14 @@ def crear_poster():
         frase_es = "La disciplina tarde o temprano vencerá a la inteligencia."
         autor = "Yokoi Kenji"
 
-    # 2. Obtener Imagen
+    # 2. Obtener Imagen de Fondo
     img = obtener_imagen_inteligente(frase_es)
     img = img.resize((1080, 1920)) 
     img = img.filter(ImageFilter.GaussianBlur(3))
-
-    # 3. Dibujar
-    draw = ImageDraw.Draw(img)
     W, H = img.size
-    
+
+    # 3. Dibujar Texto
+    draw = ImageDraw.Draw(img)
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 85)
         font_autor = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 50)
@@ -135,16 +132,34 @@ def crear_poster():
     draw.text((x_a+3, y_text+3), f"- {autor}", font=font_autor, fill="black")
     draw.text((x_a, y_text), f"- {autor}", font=font_autor, fill="#dddddd")
 
-    draw.text((W/2 - 60, H - 150), "JJMex Motivation", font=font_autor, fill="white")
+    # --- AQUÍ ESTÁ EL CAMBIO ---
+    # 4. Pegar el Logo
+    try:
+        logo = Image.open(NOMBRE_LOGO).convert("RGBA")
+        # Redimensionar logo (un 15% del ancho de la imagen)
+        ancho_logo = int(W * 0.15)
+        alto_logo = int((ancho_logo / logo.width) * logo.height)
+        logo = logo.resize((ancho_logo, alto_logo), Image.LANCZOS)
+        
+        # Calcular posición: Esquina inferior derecha con margen
+        margen = 50
+        pos_x = W - ancho_logo - margen
+        pos_y = H - alto_logo - margen
+        
+        # Pegar el logo sobre la imagen principal (usando su canal alfa como máscara)
+        img.paste(logo, (pos_x, pos_y), logo)
+        print("Logo pegado con éxito.")
+    except Exception as e:
+        print(f"No se pudo pegar el logo: {e}")
+        # Si falla (ej. no subiste la imagen), escribe el texto de respaldo
+        draw.text((W/2 - 60, H - 150), "JJMex Motivation", font=font_autor, fill="white")
 
-    # 4. Enviar
+    # 5. Enviar
     bio = BytesIO()
     img.save(bio, 'JPEG', quality=95)
     bio.seek(0)
     
-    # MENSAJE LIMPIO: Negritas activas y hashtags reducidos
     caption_final = f"🚀 <b>{frase_es}</b>\n\n#MenteYExito365 #{tema_actual}"
-    
     enviar_foto(bio, caption_final)
 
 if __name__ == "__main__":
