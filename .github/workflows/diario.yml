@@ -1,10 +1,10 @@
 name: Publicar Motivación
 
 on:
-  push:                # Se activa al guardar para probar
-  workflow_dispatch:   # Botón manual
+  push:
+  workflow_dispatch:
   schedule:
-# 8:00 AM (14:00 UTC) y 6:00 PM (00:00 UTC) hora CDMX aprox.
+    # 8:00 AM y 6:00 PM (Hora CDMX aprox)
     - cron: '0 14,0 * * *'
 
 jobs:
@@ -27,7 +27,13 @@ jobs:
 
       - name: Crear y Enviar Arte
         env:
+          # Estas ya las tenías:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          # --- ESTAS SON LAS NUEVAS QUE FALTABAN ---
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
         run: python main.py
