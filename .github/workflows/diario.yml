@@ -4,8 +4,8 @@ on:
   push:                # Se activa al guardar para probar
   workflow_dispatch:   # Botón manual
   schedule:
-    # 13:00 UTC = 7:00 AM México (aprox)
-    - cron: '0 13 * * *'
+# 8:00 AM (14:00 UTC) y 6:00 PM (00:00 UTC) hora CDMX aprox.
+    - cron: '0 14,0 * * *'
 
 jobs:
   generar-imagen:
