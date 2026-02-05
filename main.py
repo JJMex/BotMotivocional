@@ -3,17 +3,27 @@ import requests
 import textwrap
 import random
 import time
+import tweepy
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from io import BytesIO
 from deep_translator import GoogleTranslator
 
-# --- CONFIGURACIÓN ---
-TOKEN = os.environ.get('TELEGRAM_TOKEN')
-CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+# --- CONFIGURACIÓN DE LLAVES ---
+# Telegram
+TG_TOKEN = os.environ.get('TELEGRAM_TOKEN')
+TG_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+
+# Pexels & Estética
 PEXELS_KEY = os.environ.get('PEXELS_API_KEY')
 NOMBRE_LOGO = "logo_jjmex.png"
 
-# APIs
+# Twitter (X)
+TW_API_KEY = os.environ.get('TWITTER_API_KEY')
+TW_API_SECRET = os.environ.get('TWITTER_API_SECRET')
+TW_ACCESS_TOKEN = os.environ.get('TWITTER_ACCESS_TOKEN')
+TW_ACCESS_SECRET = os.environ.get('TWITTER_ACCESS_SECRET')
+
+# APIs URLs
 URL_API_FRASE = "https://zenquotes.io/api/random"
 URL_PEXELS = "https://api.pexels.com/v1/search"
 URL_BACKUP = "https://picsum.photos/1080/1920"
@@ -28,9 +38,8 @@ TEMAS = {
     "default": ["stormy ocean", "mountain peak", "dark city night", "galaxy stars"]
 }
 
-# --- ARSENAL DE 100 FRASES (RIQUEZA, PODER, GYM) ---
+# --- ARSENAL DE FRASES ---
 FRASES_MANUALES = [
-    # --- RIQUEZA Y NEGOCIOS ---
     "El dinero no duerme, y tú tampoco deberías.",
     "Tu cuenta bancaria es el reflejo de tus hábitos.",
     "Mientras ellos duermen, tú construyes tu imperio.",
@@ -64,8 +73,6 @@ FRASES_MANUALES = [
     "Tu red de contactos es tu patrimonio neto.",
     "No hables de planes, muestra resultados.",
     "La suerte es lo que sucede cuando la preparación se encuentra con la oportunidad.",
-
-    # --- GYM, DOLOR Y DISCIPLINA ---
     "El dolor es temporal, la gloria es eterna.",
     "No te detengas cuando estés cansado, detente cuando hayas terminado.",
     "El cuerpo logra lo que la mente cree.",
@@ -96,8 +103,6 @@ FRASES_MANUALES = [
     "El sacrificio de hoy es el cuerpo del verano.",
     "Entrena hasta que tus ídolos te pidan consejos.",
     "Soy el arquitecto de mi propio físico.",
-    
-    # --- PODER, MENTALIDAD Y ESTOICISMO ---
     "Un león no se preocupa por la opinión de las ovejas.",
     "El precio de la grandeza es la responsabilidad.",
     "No busques culpables, busca soluciones.",
@@ -135,26 +140,65 @@ FRASES_MANUALES = [
     "El fracaso es solo la oportunidad de comenzar de nuevo con más inteligencia."
 ]
 
-def enviar_foto(image_bytes, caption):
-    if not TOKEN or not CHAT_ID: return False
+# --- FUNCIONES DE ENVÍO ---
+
+def enviar_telegram(image_bytes, caption):
+    if not TG_TOKEN or not TG_CHAT_ID: 
+        print("⚠️ No hay llaves de Telegram.")
+        return False
     try:
-        url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
+        url = f"https://api.telegram.org/bot{TG_TOKEN}/sendPhoto"
         files = {'photo': ('motivacion.jpg', image_bytes)}
-        data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
+        data = {'chat_id': TG_CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
         requests.post(url, files=files, data=data, timeout=30)
         return True
     except Exception as e: 
-        print(f"Error TG: {e}")
+        print(f"Error Telegram: {e}")
         return False
 
-# Variable global para guardar qué tema se usó
+def enviar_twitter(image_bytes, texto_limpio):
+    if not TW_API_KEY: 
+        print("⚠️ No hay llaves de Twitter.")
+        return False
+    try:
+        # 1. Autenticación v1.1 (Para subir imágenes)
+        auth = tweepy.OAuthHandler(TW_API_KEY, TW_API_SECRET)
+        auth.set_access_token(TW_ACCESS_TOKEN, TW_ACCESS_SECRET)
+        api = tweepy.API(auth)
+
+        # 2. Autenticación v2 (Para publicar el tweet)
+        client = tweepy.Client(
+            consumer_key=TW_API_KEY, consumer_secret=TW_API_SECRET,
+            access_token=TW_ACCESS_TOKEN, access_token_secret=TW_ACCESS_SECRET
+        )
+
+        # 3. Subir la imagen (Necesita un archivo físico temporal)
+        nombre_temp = "temp_twitter.jpg"
+        with open(nombre_temp, 'wb') as f:
+            f.write(image_bytes.getbuffer())
+        
+        print("📤 Subiendo media a Twitter...")
+        media = api.media_upload(filename=nombre_temp)
+        
+        # 4. Publicar Tweet
+        print("🐦 Publicando Tweet...")
+        client.create_tweet(text=texto_limpio, media_ids=[media.media_id])
+        
+        # Limpiar
+        os.remove(nombre_temp)
+        return True
+
+    except Exception as e:
+        print(f"❌ Error Twitter: {e}")
+        return False
+
+# --- MOTORES DE GENERACIÓN ---
 tema_actual = "Éxito"
 
 def obtener_imagen_fitness_lujo(frase):
     global tema_actual
     frase_low = frase.lower()
     
-    # Detector de palabras clave mejorado
     palabras_clave = {
         "dinero": "riqueza", "banco": "riqueza", "millonario": "riqueza", "pobreza": "riqueza", "lujo": "riqueza", "ferrari": "riqueza", "invertir": "riqueza", "facturas": "riqueza",
         "negocio": "negocios", "trabajo": "negocios", "imperio": "negocios", "éxito": "negocios", "mercado": "negocios", "vender": "negocios",
@@ -178,7 +222,6 @@ def obtener_imagen_fitness_lujo(frase):
 
     try:
         headers = {'Authorization': PEXELS_KEY}
-        # Pedimos más resultados (8) para tener variedad
         params = {'query': busqueda, 'orientation': 'portrait', 'per_page': 8} 
         response = requests.get(URL_PEXELS, headers=headers, params=params, timeout=20)
         data = response.json()
@@ -191,42 +234,32 @@ def obtener_imagen_fitness_lujo(frase):
         return Image.open(BytesIO(requests.get(URL_BACKUP).content))
 
 def obtener_frase():
-    # --- LÓGICA 60/40 ---
-    # Si el número aleatorio (0.0 a 1.0) es menor a 0.6, usamos la lista manual (60%)
     if random.random() < 0.6:
-        print("⚡ Usando frase MANUAL de Poder")
-        # --- AQUÍ ESTÁ EL CAMBIO SOLICITADO ---
+        print("⚡ Frase MANUAL")
         return random.choice(FRASES_MANUALES), "JJMex"
-    
-    # El otro 40% usamos la API externa
     try:
-        print("🌐 Buscando frase en API...")
+        print("🌐 Frase API")
         data = requests.get(URL_API_FRASE, timeout=10).json()[0]
-        frase_en = data['q']
-        autor = data['a']
-        frase_es = GoogleTranslator(source='auto', target='es').translate(frase_en)
-        return frase_es, autor
+        frase_es = GoogleTranslator(source='auto', target='es').translate(data['q'])
+        return frase_es, data['a']
     except:
-        # Si falla la API, volvemos a la lista manual como respaldo
         return random.choice(FRASES_MANUALES), "JJMex"
 
 def crear_poster():
-    # 1. Obtener contenido
+    # 1. GENERAR CONTENIDO
     frase_es, autor = obtener_frase()
-
-    # 2. Obtener Imagen
     img = obtener_imagen_fitness_lujo(frase_es)
     img = img.resize((1080, 1920)) 
     
-    # 3. Efecto Dark Mode (Capa negra al 60% de opacidad)
+    # Capa oscura
     overlay = Image.new('RGBA', img.size, (0, 0, 0, 60))
     img = img.convert('RGBA')
     img = Image.alpha_composite(img, overlay)
     img = img.convert('RGB')
     
+    # Dibujar
     W, H = img.size
     draw = ImageDraw.Draw(img)
-    
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 80)
         font_autor = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 45)
@@ -240,45 +273,42 @@ def crear_poster():
 
     for linea in lineas:
         bbox = draw.textbbox((0, 0), linea, font=font)
-        w_line = bbox[2] - bbox[0]
-        h_line = bbox[3] - bbox[1]
-        x = (W - w_line) / 2
-        
-        # Sombra negra fuerte para máxima legibilidad
+        x = (W - (bbox[2] - bbox[0])) / 2
         draw.text((x+4, y_text+4), linea, font=font, fill="black")
         draw.text((x, y_text), linea, font=font, fill="white")
-        y_text += h_line + 20
+        y_text += (bbox[3] - bbox[1]) + 20
 
     y_text += 40
     bbox_a = draw.textbbox((0, 0), f"- {autor}", font=font_autor)
     x_a = (W - (bbox_a[2] - bbox_a[0])) / 2
     draw.text((x_a, y_text), f"- {autor}", font=font_autor, fill="#cccccc")
 
-    # 4. Pegar Logo (si existe)
+    # Logo
     try:
         logo = Image.open(NOMBRE_LOGO).convert("RGBA")
         ancho_logo = int(W * 0.18)
         alto_logo = int((ancho_logo / logo.width) * logo.height)
         logo = logo.resize((ancho_logo, alto_logo), Image.LANCZOS)
         img.paste(logo, (W - ancho_logo - 60, H - alto_logo - 60), logo)
-    except:
-        pass
+    except: pass
 
-    # 5. Enviar (Con 3 Reintentos)
+    # Guardar en memoria
     bio = BytesIO()
     img.save(bio, 'JPEG', quality=95)
     bio.seek(0)
     
-    # Hashtags dinámicos
-    caption = f"🐺 <b>{frase_es}</b>\n\n#Riqueza #Poder #JJMex #{tema_actual}"
+    # --- 2. ENVIAR A TELEGRAM ---
+    caption_tg = f"🐺 <b>{frase_es}</b>\n\n#Riqueza #Poder #JJMex #{tema_actual}"
+    print("🚀 Enviando a Telegram...")
+    enviar_telegram(bio, caption_tg)
     
-    for i in range(3):
-        print(f"Intento {i+1}...")
-        if enviar_foto(bio, caption): 
-            print("✅ Enviado.")
-            break
-        time.sleep(10)
-        bio.seek(0)
+    # --- 3. ENVIAR A TWITTER ---
+    # Rebobinamos la imagen para leerla de nuevo
+    bio.seek(0)
+    # Quitamos negritas HTML para Twitter
+    caption_tw = f"🐺 {frase_es}\n\n#Riqueza #Poder #JJMex #{tema_actual}"
+    print("🚀 Enviando a Twitter...")
+    enviar_twitter(bio, caption_tw)
 
 if __name__ == "__main__":
     crear_poster()
