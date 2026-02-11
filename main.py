@@ -3,7 +3,7 @@ import requests
 import textwrap
 import random
 import time
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from io import BytesIO
 from deep_translator import GoogleTranslator
 
@@ -13,16 +13,21 @@ CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 PEXELS_KEY = os.environ.get('PEXELS_API_KEY')
 NOMBRE_LOGO = "logo_jjmex.png"
 
+# Rutas de Fuentes (Instaladas vía YAML)
+FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_SERIF = "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf"
+FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
 URL_API_FRASE = "https://zenquotes.io/api/random"
 URL_PEXELS = "https://api.pexels.com/v1/search"
 URL_BACKUP = "https://picsum.photos/1080/1920"
 
 TEMAS = {
-    "riqueza": ["luxury lifestyle", "stacks of money", "gold bars", "expensive watch", "private jet", "lamborghini", "ferrari", "yacht"],
-    "negocios": ["business man suit", "stock market wall street", "skyscraper view", "luxury office", "signing contract", "entrepreneur"],
-    "poder": ["lion face dark", "chess king", "wolf dark", "throne", "military discipline", "eagle flying"],
-    "gym": ["bodybuilder", "heavy weights", "boxing training", "sprinter running", "crossfit", "sweat gym", "fitness model"],
-    "disciplina": ["alarm clock 5am", "working late night office", "samurai", "spartan warrior", "running rain"],
+    "riqueza": ["luxury lifestyle", "expensive watch", "private jet", "lamborghini", "yacht"],
+    "negocios": ["business man suit", "skyscraper view", "luxury office", "entrepreneur"],
+    "poder": ["lion face dark", "chess king", "wolf dark", "throne"],
+    "gym": ["bodybuilder", "heavy weights", "boxing training", "fitness model"],
+    "disciplina": ["alarm clock 5am", "samurai", "spartan warrior", "running rain"],
     "default": ["stormy ocean", "mountain peak", "dark city night", "galaxy stars"]
 }
 
@@ -80,15 +85,17 @@ FRASES_MANUALES = [
 
 def enviar_telegram(image_bytes, caption):
     if not TOKEN or not CHAT_ID: return False
-    requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", 
-                  data={'chat_id': CHAT_ID, 'text': "📡 <i>Sincronizando banco de datos de mentalidad y generando activo visual...</i>", 'parse_mode': 'HTML'})
     try:
+        requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", 
+                      data={'chat_id': CHAT_ID, 'text': "📡 <i>Sincronizando banco de datos de mentalidad y generando activo visual...</i>", 'parse_mode': 'HTML'}, timeout=10)
         url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
         files = {'photo': ('motivacion.jpg', image_bytes)}
         data = {'chat_id': CHAT_ID, 'caption': caption, 'parse_mode': 'HTML'}
         r = requests.post(url, files=files, data=data, timeout=30)
         return r.status_code == 200
-    except: return False
+    except Exception as e:
+        print(f"Error envío: {e}")
+        return False
 
 def obtener_imagen_contextual(frase):
     frase_low = frase.lower()
@@ -110,68 +117,99 @@ def obtener_imagen_contextual(frase):
             break
             
     try:
+        if not PEXELS_KEY: raise Exception("No API Key")
         headers = {'Authorization': PEXELS_KEY}
         params = {'query': busqueda, 'orientation': 'portrait', 'per_page': 5}
-        r = requests.get(URL_PEXELS, headers=headers, params=params, timeout=20).json()
-        foto = random.choice(r['photos'])
-        return Image.open(BytesIO(requests.get(foto['src']['large2x']).content)), tema_slug
-    except:
-        return Image.open(BytesIO(requests.get(URL_BACKUP).content)), "MOTIVACIONAL"
+        r = requests.get(URL_PEXELS, headers=headers, params=params, timeout=15)
+        r.raise_for_status()
+        data = r.json()
+        foto = random.choice(data['photos'])
+        img_data = requests.get(foto['src']['large2x'], timeout=15).content
+        return Image.open(BytesIO(img_data)), tema_slug
+    except Exception as e:
+        print(f"Pexels falló ({e}). Usando Backup.")
+        img_data = requests.get(URL_BACKUP, timeout=15).content
+        return Image.open(BytesIO(img_data)), "MOTIVACIONAL"
+
+def aplicar_gradiente(img):
+    """Crea un gradiente vertical: más oscuro al centro para el texto."""
+    width, height = img.size
+    overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    
+    for y in range(height):
+        # Curva de opacidad: 80 en bordes, hasta 190 en el centro (y=960)
+        distancia_centro = abs(y - height/2) / (height/2)
+        opacidad = int(200 - (distancia_centro * 120))
+        draw.line([(0, y), (width, y)], fill=(0, 0, 0, opacidad))
+    
+    return Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
 
 def crear_poster():
-    if random.random() < 0.6:
+    # 1. Error Handling en Frase
+    try:
+        if random.random() < 0.6:
+            frase, autor = random.choice(FRASES_MANUALES), "JJMex"
+        else:
+            r = requests.get(URL_API_FRASE, timeout=10).json()[0]
+            frase = GoogleTranslator(source='auto', target='es').translate(r['q'])
+            autor = r['a']
+    except Exception as e:
+        print(f"Error Frase: {e}")
         frase, autor = random.choice(FRASES_MANUALES), "JJMex"
-    else:
-        try:
-            data = requests.get(URL_API_FRASE).json()[0]
-            frase = GoogleTranslator(source='auto', target='es').translate(data['q'])
-            autor = data['a']
-        except: frase, autor = random.choice(FRASES_MANUALES), "JJMex"
 
+    # 2. Imagen y Gradiente Avanzado
     img, tema_tag = obtener_imagen_contextual(frase)
     img = img.resize((1080, 1920))
-    
-    # Transparencia negra (Legibilidad texto)
-    overlay = Image.new('RGBA', img.size, (0, 0, 0, 160)) 
-    img = Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
+    img = aplicar_gradiente(img)
     
     draw = ImageDraw.Draw(img)
+    
+    # 3. Variedad de Tipografías (Selección por Tema) 
+    # Poder/Gym -> Bold Sans | Riqueza/Negocios -> Serif Elegante 
     try:
-        fnt = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 75)
-        # Fuente para el autor (Un poco más pequeña)
-        fnt_autor = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 45)
+        if tema_tag in ["RIQUEZA", "NEGOCIOS"]:
+            fnt_path, fnt_size = FONT_SERIF, 85
+        elif tema_tag in ["PODER", "GYM"]:
+            fnt_path, fnt_size = FONT_BOLD, 80
+        else:
+            fnt_path, fnt_size = FONT_REGULAR, 75
+            
+        fnt = ImageFont.truetype(fnt_path, fnt_size)
+        fnt_autor = ImageFont.truetype(FONT_REGULAR, 45)
     except:
         fnt = ImageFont.load_default()
         fnt_autor = ImageFont.load_default()
 
-    # Centrado de frase principal
-    lineas = textwrap.wrap(frase, width=20)
-    y_text = (1920 - (len(lineas) * 100)) / 2
+    # 4. Dibujar Texto
+    lineas = textwrap.wrap(frase, width=18)
+    y_text = (1920 - (len(lineas) * (fnt_size + 20))) / 2
     for l in lineas:
-        bbox = draw.textbbox((0, 0), l, font=fnt)
-        w = bbox[2] - bbox[0]
+        w = draw.textbbox((0, 0), l, font=fnt)[2]
         draw.text(((1080-w)/2, y_text), l, font=fnt, fill="white")
-        y_text += 100
+        y_text += fnt_size + 20
 
-    # --- DIBUJAR AUTOR EN IMAGEN ---
+    # Autor
     texto_autor = f"- {autor}"
-    bbox_a = draw.textbbox((0, 0), texto_autor, font=fnt_autor)
-    w_a = bbox_a[2] - bbox_a[0]
-    draw.text(((1080 - w_a) / 2, y_text + 40), texto_autor, font=fnt_autor, fill="#cccccc")
+    w_a = draw.textbbox((0, 0), texto_autor, font=fnt_autor)[2]
+    draw.text(((1080 - w_a) / 2, y_text + 40), texto_autor, font=fnt_autor, fill="#dddddd")
 
-    # Logo
+    # 5. Logo JJMex
     try:
         logo = Image.open(NOMBRE_LOGO).convert("RGBA")
         logo.thumbnail((280, 280)) 
-        img.paste(logo, (750, 1600), logo) 
+        img.paste(logo, (750, 1620), logo) 
     except: pass
 
+    # 6. Envío Robusto
     bio = BytesIO()
     img.save(bio, 'JPEG', quality=95)
     bio.seek(0)
     
     caption = f"🐺 <b>{frase}</b>\n\n- {autor}\n\n#Poder #JJMex #{tema_tag}"
-    enviar_telegram(bio, caption)
+    
+    if not enviar_telegram(bio, caption):
+        print("Fallo crítico en envío.")
 
 if __name__ == "__main__":
     crear_poster()
