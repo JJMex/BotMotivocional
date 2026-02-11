@@ -56,7 +56,7 @@ FRASES_MANUALES = [
     "Domina tu mente y dominarás tu cuerpo.", "La fuerza no viene de ganar, viene de no rendirse.",
     "Si no te desafía, no te cambia.", "Menos charla, más peso.",
     "Tu cuerpo es el único lugar que tienes para vivir.", "La debilidad es una elección.",
-    "No cuentas las repeticiones, haz que las repeticiones cuenten.", "Levántate. Entrena. Repite.",
+    "No cuentes las repeticiones, haz que las repeticiones cuenten.", "Levántate. Entrena. Repite.",
     "El sacrificio de hoy es el cuerpo del verano.", "Entrena hasta que tus ídolos te pidan consejos.",
     "Soy el arquitecto de mi propio físico.", "Un león no se preocupa por la opinión de las ovejas.",
     "El precio de la grandeza es la responsabilidad.", "No busques culpables, busca soluciones.",
@@ -74,7 +74,7 @@ FRASES_MANUALES = [
     "Vive como si fueras a morir mañana, aprende como si fueras a vivir siempre.", "La paciencia es amarga, pero su fruto es dulce.",
     "No eres lo que logras, eres lo que superas.", "El miedo es una reacción, el coraje es una decisión.",
     "Sé el cambio que quieres ver en el mundo, pero empieza por tu cuenta bancaria.", "La mediocridad es el peor enemigo.",
-    "Nunca te rindas, los milagros ocurren todos los días.", "Tu tiempo es limitado, no lo desperdicies viviendo la vida de otro.",
+    "Nunca te rindas, los milagros ocurren todos los días.", "Tu tiempo es limitado, no lo despercidies viviendo la vida de otro.",
     "Atrévete a ser diferente.", "El fracaso es solo la oportunidad de comenzar de nuevo con más inteligencia."
 ]
 
@@ -131,17 +131,20 @@ def crear_poster():
     img, tema_tag = obtener_imagen_contextual(frase)
     img = img.resize((1080, 1920))
     
-    # --- MEJORA DE LEGIBILIDAD ---
-    # Se aumentó la opacidad de la capa negra a 160 (de un máximo de 255)
-    # Esto oscurece más el fondo, haciendo que el texto blanco resalte perfectamente.
+    # Transparencia negra (Legibilidad texto)
     overlay = Image.new('RGBA', img.size, (0, 0, 0, 160)) 
     img = Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
     
     draw = ImageDraw.Draw(img)
     try:
         fnt = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 75)
-    except: fnt = ImageFont.load_default()
+        # Fuente para el autor (Un poco más pequeña)
+        fnt_autor = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 45)
+    except:
+        fnt = ImageFont.load_default()
+        fnt_autor = ImageFont.load_default()
 
+    # Centrado de frase principal
     lineas = textwrap.wrap(frase, width=20)
     y_text = (1920 - (len(lineas) * 100)) / 2
     for l in lineas:
@@ -150,6 +153,13 @@ def crear_poster():
         draw.text(((1080-w)/2, y_text), l, font=fnt, fill="white")
         y_text += 100
 
+    # --- DIBUJAR AUTOR EN IMAGEN ---
+    texto_autor = f"- {autor}"
+    bbox_a = draw.textbbox((0, 0), texto_autor, font=fnt_autor)
+    w_a = bbox_a[2] - bbox_a[0]
+    draw.text(((1080 - w_a) / 2, y_text + 40), texto_autor, font=fnt_autor, fill="#cccccc")
+
+    # Logo
     try:
         logo = Image.open(NOMBRE_LOGO).convert("RGBA")
         logo.thumbnail((280, 280)) 
