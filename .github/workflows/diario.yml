@@ -5,7 +5,6 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    # Ejecución a las 8:00 AM y 6:00 PM CDMX aprox
     - cron: '0 14,0 * * *'
 
 jobs:
@@ -20,10 +19,10 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Instalar dependencias directamente
+      - name: Instalar dependencias y fuentes
         run: |
           sudo apt-get update
-          sudo apt-get install -y fonts-dejavu
+          sudo apt-get install -y fonts-dejavu fonts-liberation
           python -m pip install --upgrade pip
           pip install requests Pillow deep_translator
 
