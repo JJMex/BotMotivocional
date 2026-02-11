@@ -5,7 +5,7 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    # 8:00 AM y 6:00 PM (Hora CDMX aprox)
+    # Ejecución a las 8:00 AM y 6:00 PM CDMX aprox
     - cron: '0 14,0 * * *'
 
 jobs:
